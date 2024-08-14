@@ -22,7 +22,6 @@ snake_y = 100
 snake_size = 20
 snake_speed = 5
 
-
 # 定义食物的初始位置和大小
 food_x = random.randrange(0, screen_width - snake_size, 20)
 food_y = random.randrange(0, screen_height - snake_size, 20)
@@ -37,6 +36,9 @@ snake_body = []
 # 定义一个计时器来控制蛇的移动速度
 clock = pygame.time.Clock()
 
+# 定义一个标志来表示游戏是否暂停
+paused = False
+
 # 定义一个函数来绘制蛇和食物
 def draw(snake_x, snake_y, snake_body, food_x, food_y):
     screen.fill(BLACK)
@@ -45,6 +47,12 @@ def draw(snake_x, snake_y, snake_body, food_x, food_y):
         pygame.draw.rect(screen, GREEN, [pos[0], pos[1], snake_size, snake_size])
 
     pygame.draw.rect(screen, RED, [food_x, food_y, food_size, food_size])
+
+    # 如果游戏暂停，显示暂停提示
+    if paused:
+        font = pygame.font.Font(None, 36)
+        text = font.render('PAUSED', True, WHITE)
+        screen.blit(text, ((screen_width - text.get_width()) / 2, (screen_height - text.get_height()) / 2))
 
     pygame.display.update()
 
@@ -67,43 +75,45 @@ while True:
                 snake_direction = 'left'
             elif event.key == pygame.K_RIGHT:
                 snake_direction = 'right'
+            elif event.key == pygame.K_SPACE:  # 按下空格键切换暂停状态
+                paused = not paused
 
-    # 移动蛇的头部
-    if snake_direction == 'up':
-        snake_y -= snake_speed
-    elif snake_direction == 'down':
-        snake_y += snake_speed
-    elif snake_direction == 'left':
-        snake_x -= snake_speed
-    elif snake_direction == 'right':
-        snake_x += snake_speed
+    # 如果游戏未暂停，执行以下逻辑
+    if not paused:
+        # 移动蛇的头部
+        if snake_direction == 'up':
+            snake_y -= snake_speed
+        elif snake_direction == 'down':
+            snake_y += snake_speed
+        elif snake_direction == 'left':
+            snake_x -= snake_speed
+        elif snake_direction == 'right':
+            snake_x += snake_speed
 
-    # 判断是否吃到食物
-    if (snake_x == food_x and snake_y == food_y) or (snake_x == food_x and abs(snake_y - food_y) < snake_size) or (snake_y == food_y and abs(snake_x - food_x) < snake_size):
-        food_x = random.randrange(0, screen_width - snake_size, 10)
-        food_y = random.randrange(0, screen_height - snake_size, 10)
-        snake_body.append([snake_x, snake_y])
+        # 判断是否吃到食物
+        if (snake_x == food_x and snake_y == food_y) or (snake_x == food_x and abs(snake_y - food_y) < snake_size) or (snake_y == food_y and abs(snake_x - food_x) < snake_size):
+            food_x = random.randrange(0, screen_width - snake_size, 10)
+            food_y = random.randrange(0, screen_height - snake_size, 10)
+            snake_body.append([snake_x, snake_y])
 
-    # 更新蛇的身体坐标
-    snake_body.insert(0, [snake_x, snake_y])
-    if len(snake_body) > 1:
-        snake_body.pop()
+        # 更新蛇的身体坐标
+        snake_body.insert(0, [snake_x, snake_y])
+        if len(snake_body) > 1:
+            snake_body.pop()
 
-    # 判断游戏是否结束
-    if snake_x < 0 or snake_x > screen_width - snake_size or snake_y < 0 or snake_y > screen_height - snake_size or [snake_x, snake_y] in snake_body[1:]:
-        # 游戏结束，显示分数并等待退出
-        font = pygame.font.Font(None, 36)
-        text = font.render('Score: ' + str(len(snake_body)), True, WHITE)
-        screen.blit(text, ((screen_width - text.get_width()) / 2, (screen_height - text.get_height()) / 2))
-        pygame.display.update()
-        pygame.time.wait(2000)
-        pygame.quit()
-        quit()
+        # 判断游戏是否结束
+        if snake_x < 0 or snake_x > screen_width - snake_size or snake_y < 0 or snake_y > screen_height - snake_size or [snake_x, snake_y] in snake_body[1:]:
+            # 游戏结束，显示分数并等待退出
+            font = pygame.font.Font(None, 36)
+            text = font.render('Score: ' + str(len(snake_body)), True, WHITE)
+            screen.blit(text, ((screen_width - text.get_width()) / 2, (screen_height - text.get_height()) / 2))
+            pygame.display.update()
+            pygame.time.wait(2000)
+            pygame.quit()
+            quit()
 
     # 绘制蛇和食物
     draw(snake_x, snake_y, snake_body, food_x, food_y)
 
-
     # 控制蛇的移动速度
     clock.tick(20)
-
